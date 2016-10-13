@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        .main {
+            width: 800px;
+            margin: 0 auto;
+            margin-top: 200px;
+            padding-left: 200px;
+        }
+
+        .input {
+            padding-left: 20px;
+        }
+
+        .button {
+            padding-left: 220px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="main">
+
+        <h1>Enter URL for Newspaper List XML File</h1>
+        <form name="myform" method="POST" id="location">
+            <div class="input"><input type="text" name="URL" maxlength="200" size="80" value="newslist.xml" /></div>
+            <br><br>
+            <div class="button"><input type="button" name="submit" value="Submit Query" onClick="viewXML(this.form)" /></div>
+        </form>
+    </div>
+    <script>
+    function isParseError(parsedDocument) {
+        var parser = new DOMParser(),
+            errorneousParse = parser.parseFromString('<', 'text/xml'),
+            parsererrorNS = errorneousParse.getElementsByTagName("parsererror")[0].namespaceURI;
+
+        return parsedDocument.getElementsByTagNameNS(parsererrorNS, 'parsererror').length > 0;
+    };
+        function viewXML(what) {
+            var URL = what.URL.value;
+            var w = 800;
+            var h = 800;
+            var left = (screen.width / 2) - (w / 2);
+            var top = (screen.height / 2) - (h / 2);
+            function loadXML(url) {
+                if (window.XMLHttpRequest) {
+                    xmlhttp = new XMLHttpRequest();
+                } else {
+                    xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+                }
+                xmlhttp.open("GET", URL, false);
+                xmlhttp.send();
+                xmlDoc = xmlhttp.responseXML;
+                return xmlDoc;
+            }
+            xmlDoc = loadXML(URL);
+                if(isParseError(xmlDoc)) {
+                    alert("Error parsing XML!");
+                    return;
+                }
+
+
+            if (xmlDoc == null) {
+                alert("Xml file not found!");
+                return;
+            }
+            if (xmlDoc.getElementsByTagName("Row").length < 1) {
+                alert("There Are no newspapers in that XML file");
+                return;
+            }
+            if (window.ActiveXObject) {
+                if (xmlDoc.parseError.errorCode != 0) {
+                    var myErr = xmlDoc.parseError;
+                    generateError(xmlDoc);
+                    hWin = window.open("", "Error", "height=300,width=340");
+                    hWin.document.write(html_text);
+                } else {
+                    generateHTML(xmlDoc);
+                    hWin = window.open("", "Assignment4", 'toolbar=no, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
+                    hWin.document.write(html_text);
+                }
+            } else {
+                xmlDoc.onload = generateHTML(xmlDoc);
+                hWin = window.open("", "Assignment4", 'toolbar=no, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
+                hWin.document.write(html_text);
+            }
+            hWin.document.close();
+        }
+
+        function generateHTML(xmlDoc) {
+            var img, slot, newspaper, state, city, homepage;
+            html_text = "<html><head><title>XML Parse Result</title></head><body>";
+            html_text += "<table border='2'>";
+            row = xmlDoc.getElementsByTagName("Row");
+            loc = xmlDoc.getElementsByTagName("Location");
+            data = xmlDoc.getElementsByTagName("Data");
+            html_text += "<tbody>";
+            html_text += "<tr><th>";
+            if (data[0].childNodes.length != 1) {
+                html_text += " ";
+            } else {
+                html_text += data[0].childNodes[0].nodeValue;
+            }
+            html_text += "</th><th>";
+            if (data[1].childNodes.length != 1) {
+                html_text += " ";
+            } else {
+                html_text += data[1].childNodes[0].nodeValue;
+            }
+            html_text += "</th><th>";
+            if (data[2].childNodes.length != 1) {
+                html_text += " ";
+            } else {
+                html_text += data[2].childNodes[0].nodeValue;
+            }
+            html_text += "</th><th>";
+            if (data[3].childNodes.length != 1) {
+                html_text += " ";
+            } else {
+                html_text += data[3].childNodes[0].nodeValue;
+            }
+            html_text += "</th><th>";
+            if (data[4].childNodes.length != 1) {
+                html_text += " ";
+            } else {
+                html_text += data[4].childNodes[0].nodeValue;
+            }
+            html_text += "</th></tr>";
+            for (i = 0; i < row.length; i++) {
+
+
+                if (row[i].getElementsByTagName("Location")[0].childNodes.length == 1) {
+                    state = " ";
+                    city = " ";
+                } else if (row[i].getElementsByTagName("Location")[0].childNodes.length == 5) {
+                    if (loc[i].getElementsByTagName("State")[0].childNodes.length != 1) {
+                        state = " ";
+                    } else {
+                        state = loc[i].getElementsByTagName("State")[0].childNodes[0].nodeValue;
+                    }
+                    if (loc[i].getElementsByTagName("City")[0].childNodes.length != 1) {
+                        city = " ";
+                    } else {
+                        city = loc[i].getElementsByTagName("City")[0].childNodes[0].nodeValue;
+                    }
+                } else {
+                    if (row[i].getElementsByTagName("Location")[0].getElementsByTagName("City")[0] == undefined) {
+                        city = " ";
+                        state = loc[i].getElementsByTagName("State")[0].childNodes[0].nodeValue;
+                    } else if (row[i].getElementsByTagName("Location")[0].getElementsByTagName("State")[0] == undefined) {
+                        city = loc[i].getElementsByTagName("City")[0].childNodes[0].nodeValue;
+                        state = " ";
+                    } else {
+                        city = " ";
+                        tate = " ";
+                    }
+                }
+
+                if (row[i].getElementsByTagName("Logo")[0].childNodes.length != 1) {
+                    img = " ";
+                } else {
+                    img = row[i].getElementsByTagName("Logo")[0].childNodes[0].nodeValue;
+                }
+
+                if (row[i].getElementsByTagName("Slot")[0].childNodes.length != 1) {
+                    slot = " ";
+                } else {
+                    slot = row[i].getElementsByTagName("Slot")[0].childNodes[0].nodeValue;
+                }
+
+                if (row[i].getElementsByTagName("Newspaper")[0].childNodes.length != 1) {
+                    newspaper = " ";
+                } else {
+                    newspaper = row[i].getElementsByTagName("Newspaper")[0].childNodes[0].nodeValue;
+                }
+
+                if (row[i].getElementsByTagName("HomePage")[0].childNodes.length != 1) {
+                    homepage = " ";
+                } else {
+                    homepage = row[i].getElementsByTagName("HomePage")[0].childNodes[0].nodeValue;
+                }
+
+
+                html_text += "<tr><td>";
+                html_text += slot;
+                html_text += "</td><td>";
+                html_text += newspaper;
+                html_text += "</td><td style='padding-left:5;'><li>";
+                html_text += state;
+                html_text += "</li><li>";
+                html_text += city;
+                html_text += "</li></td><td><a href='" + homepage + "'>" + homepage + "</a></td>";
+                if(img==" ")
+                html_text += "<td></td></tr>";
+                else
+                html_text += "<td><img src='" + img + "'></td></tr>";
+            }
+            html_text += "</tbody>";
+            html_text += "</table>";
+            html_text += "</body></html>";
+        }
+    </script>
+</body>
+
+</html>
